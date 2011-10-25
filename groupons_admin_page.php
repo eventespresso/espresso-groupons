@@ -29,7 +29,6 @@ global $wpdb;
 		<form action='<?php echo $_SERVER['PHP_SELF']; ?>?page=groupons' method='post' enctype='multipart/form-data'>
 		<input type='hidden' name='csv_submitted' value='TRUE' id='<?php echo time(); ?>'>
 		<input name='action' type='hidden' value='groupon_import_csv' />
-		<input type='hidden' name='MAX_FILE_SIZE' value='1048576'>
 		<font color='red'>*</font><input type='file' name='file[]'>
 		<input class='button-primary' type='submit' value='Upload File'>
 		</p>
@@ -81,10 +80,10 @@ global $wpdb;
 								
 									// the db fields and the csv column names we want the data saved to
 									$columns_to_save = array(
-																													'groupon_code'			=> 'Groupon No.',
-																													'groupon_status' 	=> 'Status',
-																													'groupon_holder'	=> 	'Customer Name'						
-																												);
+										'groupon_code' => 'Groupon No.',
+										'groupon_status' => 'Status',
+										'groupon_holder' => 'Customer Name'						
+									);
 																													
 									$processed_groupon_codes = array();
 									
@@ -93,7 +92,9 @@ global $wpdb;
 										foreach ( $innerdata as $innerkey => $value ) {
 											// change Unredeemed / Redeemed values to boolean
 											if ( $innerkey == 'Status' ) {
-												$value = 'Redeemed' ? 1 : 0 ;
+												$value = $value == 'Redeemed' ? 0 : 1;
+												echo $value;
+												//return ;
 											}
 											// check if column is to be saved
 											if ( in_array( $innerkey, $columns_to_save ) ) {
@@ -139,6 +140,7 @@ global $wpdb;
 ?>
 
 <?php
+	//Delete
 	if($_POST['delete_groupon']){
 		if (is_array($_POST['checkbox'])){
 			while(list($key,$value)=each($_POST['checkbox'])):
@@ -155,6 +157,35 @@ global $wpdb;
 	<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been successfully deleted from the database.','event_espresso'); ?></strong></p></div>
 <?php
 	}
+	
+	//Redeem
+	if($_POST['redeem_groupon']){
+		if (is_array($_POST['checkbox'])){
+			while(list($key,$value)=each($_POST['checkbox'])):
+				$update_id=$key;
+				//Update status
+				$sql = "UPDATE ".EVENTS_GROUPON_CODES_TABLE." SET groupon_status='0' WHERE id = $update_id";
+				$wpdb->query($sql);
+			endwhile;	
+		}
+		?>
+	<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been redeemed successfully.','event_espresso'); ?></strong></p></div>
+<?php
+	}
+	//Unredeem
+	if($_POST['unredeem_groupon']){
+		if (is_array($_POST['checkbox'])){
+			while(list($key,$value)=each($_POST['checkbox'])):
+				$update_id=$key;
+				//Update status
+				$sql = "UPDATE ".EVENTS_GROUPON_CODES_TABLE." SET groupon_status='1' WHERE id = $update_id";
+				$wpdb->query($sql);
+			endwhile;	
+		}
+		?>
+	<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been redeemed successfully.','event_espresso'); ?></strong></p></div>
+<?php
+	}
 
 if (isset($_POST['Submit'])){
 	if ( $_REQUEST['action'] == 'update' ){
@@ -164,7 +195,7 @@ if (isset($_POST['Submit'])){
 		$groupon_holder = $_REQUEST['groupon_holder'];
 	global $wpdb;
 		//Post the new event into the database
-		$sql="UPDATE ".EVENTS_GROUPON_CODES_TABLE." SET groupon_code='$groupon_code', groupon_status='$groupon_status', groupon_holder='$groupon_holder' WHERE id = $groupon_id";
+		$sql = "UPDATE ".EVENTS_GROUPON_CODES_TABLE." SET groupon_code='$groupon_code', groupon_status='$groupon_status', groupon_holder='$groupon_holder' WHERE id = $groupon_id";
 
 		if ($wpdb->query($sql)){ ?>
 		<div id="message" class="updated fade"><p><strong><?php _e('The groupon code '.$_REQUEST['groupon_code'].' has been updated.','event_espresso'); ?></strong></p></div>
@@ -288,8 +319,8 @@ if ($_REQUEST['action'] == 'edit'){
 <table id="table" class="widefat fixed" width="100%"> 
 	<thead>
 		<tr>
-		  <th class="manage-column column-cb check-column" id="cb" scope="col" style="width:2.5%;"><input type="checkbox"></th>
-          <th class="manage-column column-comments num" id="id" style="padding-top:7px; width:2.5%;" scope="col" title="Click to Sort"><?php _e('ID','event_espresso'); ?></th>
+		  <th class="manage-column column-cb check-column" id="cb" scope="col" style="width:4%;"><input type="checkbox"></th>
+          <th class="manage-column column-comments num" id="id" style="padding-top:7px; width:4%;" scope="col" title="Click to Sort"><?php _e('ID','event_espresso'); ?></th>
 		  <th class="manage-column column-title" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Code','event_espresso'); ?></th>
 		  <th class="manage-column column-author" id="status" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Status','event_espresso'); ?></th>
           <th class="manage-column column-author" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Groupon Holder','event_espresso'); ?></th>
@@ -328,8 +359,12 @@ if ($_REQUEST['action'] == 'edit'){
 		
           </tbody>
           </table>
-		<input type="checkbox" name="sAll" onclick="selectAll(this)" /> <strong><?php _e('Check All','event_espresso'); ?></strong> 
-    	<input name="delete_groupon" type="submit" class="button-secondary" id="delete_groupon" value="<?php _e('Delete Groupon','event_espresso'); ?>" style="margin-left:100px;" onclick="return confirmDelete();"> <?php echo '<a href="admin.php?page=groupons&amp;action=add_new_groupon" class="button add-new-h2" style="margin-left: 20px;">' . __('Add New Groupon Code', 'event_espresso') . '</a>';?> <?php /*?><a  style="margin-left:5px"class="button-primary" href="admin.php?page=groupons&amp;action=csv_import"><?php _e('Import CSV','event_espresso'); ?></a><?php */?>
+		<input type="checkbox" name="sAll" onclick="selectAll(this)" /> <strong><?php _e('Check All','event_espresso'); ?></strong>
+       
+    	<input name="delete_groupon" type="submit" class="button-secondary" id="delete_groupon" value="<?php _e('Delete Groupon','event_espresso'); ?>" style="margin:10px 0 0 20px;" onclick="return confirmDelete();">
+        <input name="unredeem_groupon" type="submit" class="button-secondary" id="unredeem_groupon" value="<?php _e('Unredeem Groupon(s)','event_espresso'); ?>" style="margin:10px 0 0 20px;">
+         <input name="redeem_groupon" type="submit" class="button-primary" id="redeem_groupon" value="<?php _e('Redeem Groupon(s)','event_espresso'); ?>" style="margin:10px 0 0 20px;">
+		<?php echo '<a href="admin.php?page=groupons&amp;action=add_new_groupon" class="button-primary" style="margin-left: 20px;">' . __('Add New Groupon Code', 'event_espresso') . '</a>';?> 
 		</form>
 </div>
      </div>
@@ -353,7 +388,12 @@ if ($_REQUEST['action'] == 'edit'){
                 "bStateSave": true,
                 "sPaginationType": "full_numbers",
                 "oLanguage": {	"sSearch": "<strong><?php _e('Live Search Filter', 'event_espresso'); ?>:</strong>",
-                    "sZeroRecords": "<?php _e('No Records Found!', 'event_espresso'); ?>" }
+                    "sZeroRecords": "<?php _e('No Records Found!', 'event_espresso'); ?>" },
+				"oColVis": {
+					"aiExclude": [ 0, 1],
+					"buttonText": "Filter: Show / Hide Columns",
+					"bRestore": true
+				},
         			
             } );
         	
