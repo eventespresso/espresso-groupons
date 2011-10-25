@@ -2,6 +2,8 @@
 function event_espresso_groupon_config_mnu(){
 global $wpdb;
 //$wpdb->show_errors();
+//ini_set('display_errors',1); 
+//error_reporting(E_ALL);	
 ?>
 <div class="wrap">
   <div id="icon-options-event" class="icon32"> </div>
@@ -12,10 +14,129 @@ global $wpdb;
 			?>
     </h2>
 
+	<?php
+	
+	
+	
+	/***************************** ADDED BY BRENT ************************/
+	
+	
+	
+		if ($_REQUEST[ 'action' ] !='edit' && $_REQUEST[ 'action' ] !='groupon_import_csv') { ?>
+		<h3>Import Groupon Codes</h3>
+		<p>If Groupon has supplied you with a list of Codes in a Comma Separted Value (CSV) file format, you can upload the file here: 
+		<?php /*?><a href="admin.php?page=groupons&amp;action=groupon_import_csv" class="button-primary" style="margin-left: 20px;"><?php echo __('Import CSV ', 'event_espresso'); ?></a><?php */?>
+		<form action='<?php echo $_SERVER['PHP_SELF']; ?>?page=groupons' method='post' enctype='multipart/form-data'>
+		<input type='hidden' name='csv_submitted' value='TRUE' id='<?php echo time(); ?>'>
+		<input name='action' type='hidden' value='groupon_import_csv' />
+		<input type='hidden' name='MAX_FILE_SIZE' value='1048576'>
+		<font color='red'>*</font><input type='file' name='file[]'>
+		<input class='button-primary' type='submit' value='Upload File'>
+		</p>
+		<p><font color='red'>*</font>Maximum file name length (minus extension) is 15 characters. Anything over that will be cut to only 15 characters. Only .csv file types.</p>
+		</form>
+		<?php }
+		
+		
+	/***************************** brent done adding ************************/
+		
+		
+		 ?>
+
+
  <div id="poststuff" class="metabox-holder has-right-sidebar">
   <?php event_espresso_display_right_column ();?>
   <div id="post-body">
 <div id="post-body-content"> 
+
+<?php 
+
+	
+	
+	
+	/***************************** ADDED BY BRENT ************************/
+	
+	
+	
+// brent stole, i mean "borrowed" existing EE code for file uploader
+	if( isset( $_POST['csv_submitted'] )) {
+		foreach($_FILES["file"]["error"] as $key => $value){
+			if($_FILES["file"]["name"][$key]!=""){
+				if($value==UPLOAD_ERR_OK){
+					$origfilename = $_FILES["file"]["name"][$key];
+					$filename = explode(".", $_FILES["file"]["name"][$key]);
+					$filenameext = $filename[count($filename)-1];
+					unset($filename[count($filename)-1]);
+					$filename = implode(".", $filename).".".$filenameext;
+					if($filenameext=='csv'){
+						require( EVENT_ESPRESSO_PLUGINFULLPATH . 'includes/functions/import_export_csv.php' );
+						$max_upload = espresso_get_max_upload_size();
+						if($_FILES["file"]["size"][$key]<$max_upload){ 
+							if(move_uploaded_file($_FILES["file"]["tmp_name"][$key], $upload_dir.$filename)){
+							
+								$path_to_file = $upload_dir.$filename;
+								$groupon_codes_array = espresso_import_csv_to_array( $path_to_file );
+								// was data successfully stored in an array?
+								if ( is_array( $groupon_codes_array ) ) {
+								
+									// the db fields and the csv column names we want the data saved to
+									$columns_to_save = array(
+																													'groupon_code'			=> 'Groupon No.',
+																													'groupon_status' 	=> 'Status',
+																													'groupon_holder'	=> 	'Customer Name'						
+																												);
+																													
+									$processed_groupon_codes = array();
+									
+									// loop through data array to do a little processing
+									foreach ( $groupon_codes_array as $outerkey => $innerdata ) {
+										foreach ( $innerdata as $innerkey => $value ) {
+											// change Unredeemed / Redeemed values to boolean
+											if ( $innerkey == 'Status' ) {
+												$value = 'Redeemed' ? 1 : 0 ;
+											}
+											// check if column is to be saved
+											if ( in_array( $innerkey, $columns_to_save ) ) {
+												$processed_groupon_codes[$outerkey][$innerkey] = $value;
+											}																				
+										}																				
+									}					
+
+									// save processed codes to db
+									if ( $result = espresso_save_csv_to_db( $processed_groupon_codes, $columns_to_save, EVENTS_GROUPON_CODES_TABLE ) ) {
+?>
+	<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been successfully imported into the database.','event_espresso'); ?></strong></p></div>
+<?php									
+									} else { ?>
+<div id="message" class="error"><p><strong><?php _e('An error occured and the Groupon Code(s) were not imported into the database.','event_espresso'); ?> <?php  print $wpdb->print_error(); ?></strong></p></div><?php
+									}
+								
+								} else {
+								// no array? must be an error
+									echo $groupon_csv_data;
+								}
+	
+							}else{
+								echo($origfilename." was not successfully uploaded<br />");
+							} 
+						}else{ 
+							echo($origfilename." was too big, not uploaded<br />");
+						}
+					}else{
+						echo($origfilename." had an invalid file extension, not uploaded<br />");
+					}
+				}else{
+					echo($origfilename." was not successfully uploaded<br />");
+				}
+			}
+		}
+	}
+		
+		
+	/***************************** brent done adding ************************/
+		
+		
+?>
 
 <?php
 	if($_POST['delete_groupon']){
@@ -76,7 +197,7 @@ function add_groupon_to_db(){
 	}
 }
 if ( $_REQUEST['action'] == 'add' ){add_groupon_to_db();}
-if ( $_REQUEST['action'] == 'csv_import' ){require_once ('csv_import.php');groupon_csv_import();}
+
 
 function add_new_event_groupon(){
 ?>
