@@ -4,7 +4,7 @@ Plugin Name: Event Espresso - Groupons Addon
 Plugin URI: http://eventespresso.com/
 Description: Groupon integration addon for Event Espresso. <a href="admin.php?page=support">Support</a>
 
-Version: 1.5
+Version: 1.6
 
 Author: Seth Shoultes
 Author URI: http://www.eventespresso.com
@@ -31,7 +31,7 @@ require_once("groupons_admin_page.php");
 function event_espresso_groupon_install(){
 //Groupon database install
 $table_name = "events_groupon_codes";
-$table_version = "1.5";
+$table_version = "1.6";
 $sql = "id int(11) NOT NULL AUTO_INCREMENT,
 	groupon_code varchar(50) DEFAULT '0',
 	groupon_status INT DEFAULT '1',
@@ -52,4 +52,4 @@ register_deactivation_hook(__FILE__,'event_espresso_groupon_deactivate');
 
 //$event_espresso_groupon_dir = EVENT_ESPRESSO_UPLOAD_DIR."groupons/";
 //define("EVENT_ESPRESSO_GROUPON_DIR", $event_espresso_groupon_dir);
-define("EVENTS_GROUPON_CODES_TABLE", get_option('events_groupon_codes_tbl')); //Define Groupon db table shortname
+define("EVENTS_GROUPON_CODES_TABLE", $wpdb->prefix .'events_groupon_codes'); //Define Groupon db table shortname
