@@ -11,7 +11,7 @@ global $wpdb, $notices;
 			}
 			?>
     </h2>
-		<?php do_action('espresso_admin_notices'); ?>
+		<?php do_action( 'action_hook_espresso_admin_notices'); ?>
  <div id="poststuff" class="metabox-holder has-right-sidebar">
   <?php event_espresso_display_right_column ();?>
   <div id="post-body">
