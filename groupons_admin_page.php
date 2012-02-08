@@ -2,6 +2,7 @@
 function event_espresso_groupon_config_mnu(){
 global $wpdb, $notices;
 //$wpdb->show_errors();
+$_REQUEST[ 'action' ] = isset( $_REQUEST[ 'action' ] ) ? $_REQUEST[ 'action' ] : FALSE;
 ?>
 <div class="wrap">
   <div id="icon-options-event" class="icon32"> </div>
@@ -18,7 +19,7 @@ global $wpdb, $notices;
 <div id="post-body-content"> 
 
 <?php
-	if($_POST['delete_groupon']){
+	if( isset( $_POST['delete_groupon'] )) {
 		if (is_array($_POST['checkbox'])){
 			while(list($key,$value)=each($_POST['checkbox'])):
 				$del_id=$key;
@@ -35,7 +36,7 @@ global $wpdb, $notices;
 <?php
 	}
 ###################### Update Groupon & add to DB ##############################
-if (isset($_POST['Submit'])&& check_admin_referer('espresso_form_check', 'update_groupon')){
+if ( isset($_POST['Submit'])&& check_admin_referer('espresso_form_check', 'update_groupon')){
 	if ( $_REQUEST['action'] == 'update' ){
 		$groupon_id= $_REQUEST['groupon_id'];
 		$groupon_code= htmlentities2($_REQUEST['groupon_code']);
@@ -125,9 +126,9 @@ if ($_REQUEST['action'] == 'add_new_groupon'){
 function edit_event_groupon(){
 	
 	global $wpdb;
-	$id=$_REQUEST['id'];
+	$id= isset( $_REQUEST['id'] ) ? $_REQUEST['id'] : FALSE;
 	
-	 $event_groupons = $wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE . " WHERE id = " . $id);
+	$event_groupons = $wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE . " WHERE id = " . $id);
 	foreach ($event_groupons as $event_groupon){
 				
 		$groupon_id= $event_groupon->id;
