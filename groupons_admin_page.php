@@ -36,8 +36,8 @@ $_REQUEST[ 'action' ] = isset( $_REQUEST[ 'action' ] ) ? $_REQUEST[ 'action' ] :
 <?php
 	}
 ###################### Update Groupon & add to DB ##############################
-if ( isset($_POST['Submit'])&& check_admin_referer('espresso_form_check', 'update_groupon')){
-	if ( $_REQUEST['action'] == 'update' ){
+
+if ( isset($_REQUEST['Submit']) && $_REQUEST['action'] == 'update' && check_admin_referer('espresso_form_check', 'update_groupon')){
 		$groupon_id= $_REQUEST['groupon_id'];
 		$groupon_code= htmlentities2($_REQUEST['groupon_code']);
 		$groupon_status = $_REQUEST['groupon_status'];
@@ -54,15 +54,11 @@ if ( isset($_POST['Submit'])&& check_admin_referer('espresso_form_check', 'updat
 		<div id="message" class="error"><p><strong><?php _e('The groupon code '.$_REQUEST['groupon_code'].' was not updated.','event_espresso'); ?> <?php  //print $wpdb->print_error(); ?>.</strong></p></div>
 	<?php
 	}
-	}
 }
 ####################### finish Update groupon to DB ############################
 
 ####################### Add new groupon to DB ##################################
-function add_groupon_to_db(){
-	global $wpdb, $notices;
-	if (isset($_POST['Submit']) && check_admin_referer('espresso_form_check', 'add_new_groupon')){
-		if ( $_REQUEST['action'] == 'add' ){
+	if (isset($_POST['Submit']) && $_REQUEST['action'] == 'add' && check_admin_referer('espresso_form_check', 'add_new_groupon')){
 			$groupon_code= $_REQUEST['groupon_code'];
 			$groupon_status = $_REQUEST['groupon_status'];
 			$groupon_holder = $_REQUEST['groupon_holder'];
@@ -77,16 +73,14 @@ function add_groupon_to_db(){
 			<div id="message" class="error"><p><strong><?php _e('The groupon code '.$_REQUEST['groupon_code'].' was not saved.','event_espresso'); ?> <?php  //print $wpdb->print_error(); ?>.</strong></p></div>
 		<?php
 			}
-		}
 	}
-}
-if ( $_REQUEST['action'] == 'add' ){add_groupon_to_db();}
+
 ###################### Finish Add new Groupon to DB ############################
 
 if ( $_REQUEST['action'] == 'csv_import' ){require_once ('csv_import.php');groupon_csv_import();}
 
 ##################### Display Add new Groupon admin screen #####################
-function add_new_event_groupon(){
+if ($_REQUEST['action'] == 'add_new_groupon'){
 ?>
     <div class="metabox-holder">
       <div class="postbox">
@@ -117,13 +111,10 @@ function add_new_event_groupon(){
 <?php 
 }
 
-if ($_REQUEST['action'] == 'add_new_groupon'){
-	add_new_event_groupon();
-}
 ################# Finish display New Groupon admin screen ######################
 
 ################### Display Edit Groupon admin screen ########################## 	
-function edit_event_groupon(){
+if ($_REQUEST['action'] == 'edit'){
 	
 	global $wpdb;
 	$id= isset( $_REQUEST['id'] ) ? $_REQUEST['id'] : FALSE;
@@ -169,9 +160,6 @@ function edit_event_groupon(){
 <?php 
 } 
 
-if ($_REQUEST['action'] == 'edit'){
-	edit_event_groupon();
-}
 #################### finish display edit Groupon adnin screen ##################	
 
 ################### List table for created Groupons ############################
