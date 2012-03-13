@@ -56,7 +56,7 @@ function event_espresso_groupon_config_mnu() {
 							<?php
 						} else {
 							?>
-							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not updated.', 'event_espresso'); ?> <?php //print $wpdb->print_error();      ?>.</strong></p></div>
+							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not updated.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
 							<?php
 						}
 					}
@@ -75,7 +75,7 @@ function event_espresso_groupon_config_mnu() {
 							<?php
 						} else {
 							?>
-							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not saved.', 'event_espresso'); ?> <?php //print $wpdb->print_error();      ?>.</strong></p></div>
+							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not saved.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
 							<?php
 						}
 					}
@@ -178,20 +178,33 @@ function event_espresso_groupon_config_mnu() {
 //============= End Event Registration Groupon Subpage - Add/Delete/Edit Groupon Codes  =============== //
 }
 
-if (!empty($_REQUEST['action'])) {
-	if ($_REQUEST['action'] == 'edit') {
-		add_action('current_screen', 'espresso_register_groupon_edit_meta_boxes');
-	}
-
-	if ($_REQUEST['action'] == 'add_new_groupon') {
-		add_action('current_screen', 'espresso_register_groupon_edit_meta_boxes');
-	}
-}
-
-function espresso_register_groupon_add_meta_boxes() {
+function espresso_register_groupon_meta_boxes() {
 	global $org_options;
-	add_meta_box('espresso_groupon_add_box', __('Add a Groupon Code', 'event_espresso'), 'espresso_groupon_admin_add_code', 'event-espresso_page_groupons', 'normal', 'high');
+	$screen = get_current_screen();
+	if ($screen->id == 'toplevel_page_events'
+					&& isset($_REQUEST['action'])
+					&& $_REQUEST['action'] == 'edit') {
+		add_meta_box('espresso_event_editor_groupon_box', __('Groupon Options', 'event_espresso'), 'espresso_event_editor_groupon_meta_box', 'toplevel_page_events', 'side', 'default');
+	}
+	if ($screen->id == 'event-espresso_page_groupons') {
+		if (!empty($_REQUEST['action'])) {
+			if ($_REQUEST['action'] == 'edit') {
+				add_meta_box('espresso_groupon_edit_box', __('Edit Groupon Code:', 'event_espresso'), 'espresso_groupon_admin_edit_code', 'event-espresso_page_groupons', 'normal', 'high');
+			}
+
+			if ($_REQUEST['action'] == 'add_new_groupon') {
+				add_meta_box('espresso_groupon_add_box', __('Add a Groupon Code', 'event_espresso'), 'espresso_groupon_admin_add_code', 'event-espresso_page_groupons', 'normal', 'high');
+			}
+		}
+
+		add_meta_box('espresso_news_post_box', __('New @ Event Espresso', 'event_espresso'), 'espresso_news_post_box', 'event-espresso_page_groupons', 'side');
+		add_meta_box('espresso_links_post_box', __('Helpful Plugin Links', 'event_espresso'), 'espresso_links_post_box', 'event-espresso_page_groupons', 'side');
+		if (!$espresso_premium)
+			add_meta_box('espresso_sponsors_post_box', __('Sponsors', 'event_espresso'), 'espresso_sponsors_post_box', 'event-espresso_page_groupons', 'side');
+	}
 }
+
+add_action('current_screen', 'espresso_register_groupon_meta_boxes', 70);
 
 function espresso_groupon_admin_add_code() {
 	?>
@@ -210,18 +223,13 @@ function espresso_groupon_admin_add_code() {
 				<li>
 					<p>
 						<input class="button-primary" type="submit" name="Submit" value="<?php _e('Submit', 'event_espresso'); ?>" id="add_new_groupon" />
-						<?php wp_nonce_field('espresso_form_check', 'add_new_groupon') ?>
+	<?php wp_nonce_field('espresso_form_check', 'add_new_groupon') ?>
 					</p>
 				</li>
 			</ul>
 		</form>
 	</div>
 	<?php
-}
-
-function espresso_register_groupon_edit_meta_boxes() {
-	global $org_options;
-	add_meta_box('espresso_groupon_edit_box', __('Edit Groupon Code:', 'event_espresso'), 'espresso_groupon_admin_edit_code', 'event-espresso_page_groupons', 'normal', 'high');
 }
 
 function espresso_groupon_admin_edit_code() {
@@ -261,6 +269,22 @@ function espresso_groupon_admin_edit_code() {
 				</li>
 			</ul>
 		</form>
+	</div>
+	<?php
+}
+
+function espresso_event_editor_groupon_meta_box($event) {
+	$values = array(
+			array('id' => true, 'text' => __('Yes', 'event_espresso')),
+			array('id' => false, 'text' => __('No', 'event_espresso')));
+	?>
+	<div class="inside">
+		<p>
+			<label><?php _e('Allow GROUPON codes?', 'event_espresso') ?></label>
+			<?php
+			echo select_input('use_groupon_code', $values, $event->use_groupon_code);
+			?>
+		</p>
 	</div>
 	<?php
 }
