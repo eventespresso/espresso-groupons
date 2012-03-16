@@ -183,7 +183,7 @@ function espresso_register_groupon_meta_boxes() {
 	$screen = get_current_screen();
 	if ($screen->id == 'toplevel_page_events'
 					&& isset($_REQUEST['action'])
-					&& $_REQUEST['action'] == 'edit') {
+					&& ($_REQUEST['action'] == 'edit' || $_REQUEST['action'] == 'add_new_event')) {
 		add_meta_box('espresso_event_editor_groupon_box', __('Groupon Options', 'event_espresso'), 'espresso_event_editor_groupon_meta_box', 'toplevel_page_events', 'side', 'default');
 	}
 	if ($screen->id == 'event-espresso_page_groupons') {
@@ -288,3 +288,10 @@ function espresso_event_editor_groupon_meta_box($event) {
 	</div>
 	<?php
 }
+
+function espresso_new_event_template_groupon_filter($event) {
+	$event->use_groupon_code = false;
+	return $event;
+}
+
+add_filter('filter_hook_espresso_new_event_template', 'espresso_new_event_template_groupon_filter');
