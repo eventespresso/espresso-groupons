@@ -14,130 +14,130 @@ function event_espresso_groupon_config_mnu() {
 			}
 			?>
 		</h2>
-		<div id="poststuff" class="metabox-holder has-right-sidebar">
-			<div id="side-info-column" class="inner-sidebar">
-				<?php do_meta_boxes('event-espresso_page_groupons', 'side', null); ?>
-			</div>
-			<div id="post-body">
-				<div id="post-body-content">
+		<?php ob_start(); ?>
+		<div id="side-info-column" class="inner-sidebar">
+			<?php do_meta_boxes('event-espresso_page_groupons', 'side', null); ?>
+		</div>
+		<?php
+		$sidebar_content = ob_get_clean();
+		ob_start();
+		do_meta_boxes('event-espresso_page_groupons', 'normal', null);
+		if (isset($_POST['delete_groupon'])) {
+			if (is_array($_POST['checkbox'])) {
+				while (list($key, $value) = each($_POST['checkbox'])):
+					$del_id = $key;
+					//Delete discount data
+					$sql = "DELETE FROM " . EVENTS_GROUPON_CODES_TABLE . " WHERE id='$del_id'";
+					$wpdb->query($sql);
 
-					<?php
-					do_meta_boxes('event-espresso_page_groupons', 'normal', null);
-					if (isset($_POST['delete_groupon'])) {
-						if (is_array($_POST['checkbox'])) {
-							while (list($key, $value) = each($_POST['checkbox'])):
-								$del_id = $key;
-								//Delete discount data
-								$sql = "DELETE FROM " . EVENTS_GROUPON_CODES_TABLE . " WHERE id='$del_id'";
-								$wpdb->query($sql);
-
-							//$sql = "DELETE FROM ".EVENTS_GROUPON_REL_TABLE." WHERE groupon_id='$del_id'";
-							//$wpdb->query($sql);
-							endwhile;
-						}
-						?>
-						<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been successfully deleted from the database.', 'event_espresso'); ?></strong></p></div>
-						<?php
-					}
+				//$sql = "DELETE FROM ".EVENTS_GROUPON_REL_TABLE." WHERE groupon_id='$del_id'";
+				//$wpdb->query($sql);
+				endwhile;
+			}
+			?>
+			<div id="message" class="updated fade"><p><strong><?php _e('Groupon Code(s) have been successfully deleted from the database.', 'event_espresso'); ?></strong></p></div>
+			<?php
+		}
 ###################### Update Groupon & add to DB ##############################
 
-					if (isset($_REQUEST['Submit']) && $_REQUEST['action'] == 'update' && check_admin_referer('espresso_form_check', 'update_groupon')) {
-						$groupon_id = $_REQUEST['groupon_id'];
-						$groupon_code = htmlentities2($_REQUEST['groupon_code']);
-						$groupon_status = $_REQUEST['groupon_status'];
-						$groupon_holder = $_REQUEST['groupon_holder'];
-						global $wpdb;
-						//Post the new event into the database
-						$sql = "UPDATE " . EVENTS_GROUPON_CODES_TABLE . " SET groupon_code='$groupon_code', groupon_status='$groupon_status', groupon_holder='$groupon_holder' WHERE id = $groupon_id";
+		if (isset($_REQUEST['Submit']) && $_REQUEST['action'] == 'update' && check_admin_referer('espresso_form_check', 'update_groupon')) {
+			$groupon_id = $_REQUEST['groupon_id'];
+			$groupon_code = htmlentities2($_REQUEST['groupon_code']);
+			$groupon_status = $_REQUEST['groupon_status'];
+			$groupon_holder = $_REQUEST['groupon_holder'];
+			global $wpdb;
+			//Post the new event into the database
+			$sql = "UPDATE " . EVENTS_GROUPON_CODES_TABLE . " SET groupon_code='$groupon_code', groupon_status='$groupon_status', groupon_holder='$groupon_holder' WHERE id = $groupon_id";
 
-						if ($wpdb->query($sql)) {
-							?>
-							<div id="message" class="updated fade"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' has been updated.', 'event_espresso'); ?></strong></p></div>
-							<?php
-						} else {
-							?>
-							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not updated.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
-							<?php
-						}
-					}
+			if ($wpdb->query($sql)) {
+				?>
+				<div id="message" class="updated fade"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' has been updated.', 'event_espresso'); ?></strong></p></div>
+				<?php
+			} else {
+				?>
+				<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not updated.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
+				<?php
+			}
+		}
 ####################### finish Update groupon to DB ############################
 ####################### Add new groupon to DB ##################################
-					if (isset($_POST['Submit']) && $_REQUEST['action'] == 'add' && check_admin_referer('espresso_form_check', 'add_new_groupon')) {
-						$groupon_code = $_REQUEST['groupon_code'];
-						$groupon_status = $_REQUEST['groupon_status'];
-						$groupon_holder = $_REQUEST['groupon_holder'];
+		if (isset($_POST['Submit']) && $_REQUEST['action'] == 'add' && check_admin_referer('espresso_form_check', 'add_new_groupon')) {
+			$groupon_code = $_REQUEST['groupon_code'];
+			$groupon_status = $_REQUEST['groupon_status'];
+			$groupon_holder = $_REQUEST['groupon_holder'];
 
-						$sql = "INSERT INTO " . EVENTS_GROUPON_CODES_TABLE . " (groupon_code, groupon_status, groupon_holder) VALUES('$groupon_code', '$groupon_status', '$groupon_holder')";
+			$sql = "INSERT INTO " . EVENTS_GROUPON_CODES_TABLE . " (groupon_code, groupon_status, groupon_holder) VALUES('$groupon_code', '$groupon_status', '$groupon_holder')";
 
-						if ($wpdb->query($sql)) {
-							?>
-							<div id="message" class="updated fade"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' has been added.', 'event_espresso'); ?></strong></p></div>
-							<?php
-						} else {
-							?>
-							<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not saved.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
-							<?php
-						}
-					}
+			if ($wpdb->query($sql)) {
+				?>
+				<div id="message" class="updated fade"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' has been added.', 'event_espresso'); ?></strong></p></div>
+				<?php
+			} else {
+				?>
+				<div id="message" class="error"><p><strong><?php _e('The groupon code ' . $_REQUEST['groupon_code'] . ' was not saved.', 'event_espresso'); ?> <?php //print $wpdb->print_error();       ?>.</strong></p></div>
+				<?php
+			}
+		}
 
 ###################### Finish Add new Groupon to DB ############################
 
-					if ($_REQUEST['action'] == 'csv_import') {
-						require_once ('csv_import.php');
-						groupon_csv_import();
+		if ($_REQUEST['action'] == 'csv_import') {
+			require_once ('csv_import.php');
+			groupon_csv_import();
+		}
+		?>
+		<form id="form1" name="form1" method="post" action="<?php echo $_SERVER["REQUEST_URI"] ?>">
+
+			<table id="table" class="widefat fixed" width="100%">
+				<thead>
+					<tr>
+						<th class="manage-column column-cb check-column" id="cb" scope="col" style="width:2.5%;"><input type="checkbox"></th>
+						<th class="manage-column column-comments num" id="id" style="padding-top:7px; width:2.5%;" scope="col" title="Click to Sort"><?php _e('ID', 'event_espresso'); ?></th>
+						<th class="manage-column column-title" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Code', 'event_espresso'); ?></th>
+						<th class="manage-column column-author" id="status" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Status', 'event_espresso'); ?></th>
+						<th class="manage-column column-author" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Groupon Holder', 'event_espresso'); ?></th>
+						<th class="manage-column column-author" id="action" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Action', 'event_espresso'); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					$wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE);
+					if ($wpdb->num_rows > 0) {
+						$event_groupons = $wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE . " ORDER BY id ASC");
+						foreach ($event_groupons as $event_groupon) {
+
+							$groupon_id = $event_groupon->id;
+							$groupon_code = $event_groupon->groupon_code;
+							$groupon_status = $event_groupon->groupon_status;
+							$groupon_holder = $event_groupon->groupon_holder;
+
+							$active_groupon = '<span style="color: #F00; font-weight:bold;">' . __('USED', 'event_espresso') . '</span>';
+							if ($groupon_status > 0) {
+								$active_groupon = '<span style="color: #090; font-weight:bold;">' . __('ACTIVE', 'event_espresso') . '</span>';
+							}
+							?>
+							<tr>
+								<td><input name="checkbox[<?php echo $groupon_id ?>]" type="checkbox"  title="Delete <?php echo $groupon_code ?>"></td>
+								<td><?php echo $groupon_id ?></td>
+								<td><?php echo $groupon_code ?></td>
+								<td><?php echo $active_groupon ?></td>
+								<td><?php echo $groupon_holder ?></td>
+								<td><a href="admin.php?page=groupons&action=edit&id=<?php echo $groupon_id ?>"><?php _e('Edit Groupon', 'event_espresso'); ?></a></td>
+							</tr>
+							<?php
+						}
 					}
 					?>
-					<form id="form1" name="form1" method="post" action="<?php echo $_SERVER["REQUEST_URI"] ?>">
 
-						<table id="table" class="widefat fixed" width="100%">
-							<thead>
-								<tr>
-									<th class="manage-column column-cb check-column" id="cb" scope="col" style="width:2.5%;"><input type="checkbox"></th>
-									<th class="manage-column column-comments num" id="id" style="padding-top:7px; width:2.5%;" scope="col" title="Click to Sort"><?php _e('ID', 'event_espresso'); ?></th>
-									<th class="manage-column column-title" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Code', 'event_espresso'); ?></th>
-									<th class="manage-column column-author" id="status" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Status', 'event_espresso'); ?></th>
-									<th class="manage-column column-author" id="name" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Groupon Holder', 'event_espresso'); ?></th>
-									<th class="manage-column column-author" id="action" scope="col" title="Click to Sort" style="width:20%;"><?php _e('Action', 'event_espresso'); ?></th>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-								$wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE);
-								if ($wpdb->num_rows > 0) {
-									$event_groupons = $wpdb->get_results("SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE . " ORDER BY id ASC");
-									foreach ($event_groupons as $event_groupon) {
-
-										$groupon_id = $event_groupon->id;
-										$groupon_code = $event_groupon->groupon_code;
-										$groupon_status = $event_groupon->groupon_status;
-										$groupon_holder = $event_groupon->groupon_holder;
-
-										$active_groupon = '<span style="color: #F00; font-weight:bold;">' . __('USED', 'event_espresso') . '</span>';
-										if ($groupon_status > 0) {
-											$active_groupon = '<span style="color: #090; font-weight:bold;">' . __('ACTIVE', 'event_espresso') . '</span>';
-										}
-										?>
-										<tr>
-											<td><input name="checkbox[<?php echo $groupon_id ?>]" type="checkbox"  title="Delete <?php echo $groupon_code ?>"></td>
-											<td><?php echo $groupon_id ?></td>
-											<td><?php echo $groupon_code ?></td>
-											<td><?php echo $active_groupon ?></td>
-											<td><?php echo $groupon_holder ?></td>
-											<td><a href="admin.php?page=groupons&action=edit&id=<?php echo $groupon_id ?>"><?php _e('Edit Groupon', 'event_espresso'); ?></a></td>
-										</tr>
-										<?php
-									}
-								}
-								?>
-
-							</tbody>
-						</table>
-						<input type="checkbox" name="sAll" onclick="selectAll(this)" /> <strong><?php _e('Check All', 'event_espresso'); ?></strong>
-						<input name="delete_groupon" type="submit" class="button-secondary" id="delete_groupon" value="<?php _e('Delete Groupon', 'event_espresso'); ?>" style="margin-left:100px;" onclick="return confirmDelete();"> <?php echo '<a href="admin.php?page=groupons&amp;action=add_new_groupon" class="button add-new-h2" style="margin-left: 20px;">' . __('Add New Groupon Code', 'event_espresso') . '</a>'; ?> <?php /* ?><a  style="margin-left:5px"class="button-primary" href="admin.php?page=groupons&amp;action=csv_import"><?php _e('Import CSV','event_espresso'); ?></a><?php */ ?>
-					</form>
-				</div> <!--end post-body-content -->
-			</div> <!--post-body-->
-		</div><!--poststuff-->
+				</tbody>
+			</table>
+			<input type="checkbox" name="sAll" onclick="selectAll(this)" /> <strong><?php _e('Check All', 'event_espresso'); ?></strong>
+			<input name="delete_groupon" type="submit" class="button-secondary" id="delete_groupon" value="<?php _e('Delete Groupon', 'event_espresso'); ?>" style="margin-left:100px;" onclick="return confirmDelete();"> <?php echo '<a href="admin.php?page=groupons&amp;action=add_new_groupon" class="button add-new-h2" style="margin-left: 20px;">' . __('Add New Groupon Code', 'event_espresso') . '</a>'; ?> <?php /* ?><a  style="margin-left:5px"class="button-primary" href="admin.php?page=groupons&amp;action=csv_import"><?php _e('Import CSV','event_espresso'); ?></a><?php */ ?>
+		</form>
+		<?php
+		$main_post_content = ob_get_clean();
+		espresso_choose_layout($main_post_content, $sidebar_content);
+		?>
 	</div><!--wrap-->
 	<script type="text/javascript">
 		jQuery(document).ready(function($) {
@@ -265,7 +265,7 @@ function espresso_groupon_admin_edit_code() {
 
 				<li>
 					<input class="button-primary" type="submit" name="Submit" value="<?php _e('Update', 'event_espresso'); ?>" id="update_groupon" />
-					<?php wp_nonce_field('espresso_form_check', 'update_groupon') ?>
+	<?php wp_nonce_field('espresso_form_check', 'update_groupon') ?>
 				</li>
 			</ul>
 		</form>
