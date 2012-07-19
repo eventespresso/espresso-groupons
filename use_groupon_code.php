@@ -2,7 +2,7 @@
 function event_espresso_groupon_payment_page($use_groupon_code, $event_id, $event_cost, $attendee_id){
 	$org_options = get_option('events_organization_settings');
 	global $wpdb;
-	$today = date("m-d-Y");
+	$today = date(get_option('date_format'));
 	if ($use_groupon_code == "Y"){
 		if ($_REQUEST['groupon_code'] != ''){
 			
