@@ -46,7 +46,7 @@ function event_espresso_groupon_payment_page($use_groupon_code, $event_id, $even
 
 function event_espresso_groupon_registration_page($use_groupon_code, $event_id){
 	if ($use_groupon_code == "Y"){ ?>
-		<p class="event_form_field" id="groupon_code-"><label for="groupon_code"><?php _e('Do you have a GROUPON code?','event_espresso'); ?></label>		<input tabIndex="9" maxLength="25" size="35" type="text" name="groupon_code" id="groupon_code-<?php echo $event_id;?>">
+		<p class="event_form_field" id="groupon_code-"><label for="groupon_code"><?php _e('Do you have a voucher code?','event_espresso'); ?></label>		<input tabIndex="9" maxLength="25" size="35" type="text" name="groupon_code" id="groupon_code-<?php echo $event_id;?>">
 		</p>
 <?php
 	}
