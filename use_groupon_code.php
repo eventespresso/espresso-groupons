@@ -1,5 +1,5 @@
 <?php
-function event_espresso_groupon_payment_page( $use_groupon_code = 'N', $event_id, $event_cost, $attendee_id, $mer = TRUE ){
+function event_espresso_groupon_payment_page( $use_groupon_code = 'N', $event_id = FALSE, $event_cost = 0.00, $attendee_id = FALSE, $mer = TRUE ){
 
 	if ( $use_groupon_code == 'Y' ){
 		if ( ! empty( $_REQUEST['groupon_code'] ) || ! empty( $_POST['event_espresso_groupon_code'] )){
@@ -7,41 +7,22 @@ function event_espresso_groupon_payment_page( $use_groupon_code = 'N', $event_id
 			global $wpdb;
 			$msg = '';
 
-			$groupon_code = !empty($_POST['event_espresso_groupon_code']) ? sanitize_key( $_POST['event_espresso_groupon_code'] ) : sanitize_key( $_REQUEST['groupon_code'] );
+			$groupon_code = !empty($_POST['event_espresso_groupon_code']) ? wp_strip_all_tags( $_POST['event_espresso_groupon_code'] ) : wp_strip_all_tags( $_REQUEST['groupon_code'] );
 			
 			$SQL = "SELECT * FROM " . EVENTS_GROUPON_CODES_TABLE . " WHERE groupon_code = %s AND groupon_status > '0' ";
 
 			if ( $groupon = $wpdb->get_row( $wpdb->prepare( $SQL, $groupon_code ))) {	
 
-				$valid = 1;
+				$valid = TRUE;
 				$groupon_id = $groupon->id;
 				$groupon_code = $groupon->groupon_code;
 				$groupon_status = $groupon->groupon_status;
 				$groupon_holder = $groupon->groupon_holder;
 				
-				$msg = '<p id="event_espresso_valid_groupon"><strong>' . __('You are using voucher code','event_espresso') . ':</strong> '.$groupon_code . __(' purchased by ','event_espresso').$groupon_holder.'</p>';
-				
-				if ( ! $mer ) {
-				
-					$payment_status = 'Completed';
-					$today = date(get_option('date_format'));
-								
-					$sql=array('coupon_code'=>$groupon_code, 'amount_pd'=>$event_cost, 'payment_status'=>$payment_status, 'payment_date' => $today);
-					$sql_data = array('%s','%s','%s', '%s');
-								
-					$update_id = array('id'=> $attendee_id);
-					//echo '<p>$attendee_id = '.$attendee_id.'</p>';	
-					$wpdb->update(EVENTS_ATTENDEE_TABLE, $sql, $update_id, $sql_data, array( '%d' ) );
-								
-					$groupon_status = $groupon_status - 1;
-				
-					$groupon_used="UPDATE " . EVENTS_GROUPON_CODES_TABLE . " SET groupon_status='" . $groupon_status . "', date='" . $today . "' WHERE id = '" . $groupon_id . "' ";
-					$wpdb->query($groupon_used);	
-					
-					echo $msg;
-									
-				} else {
-				
+				$msg = '<p id="event_espresso_valid_groupon" style="margin:0;"><strong>' . __('Voucher code ','event_espresso') . $groupon_code . '</strong>' . __(' purchased by ','event_espresso').$groupon_holder.'<br/>';
+
+				if ( $mer ) {
+
 					$groupon_details = array();					
 					$groupon_details['id'] = $groupon->id;
 					$groupon_details['code'] = $groupon->groupon_code;
@@ -50,17 +31,41 @@ function event_espresso_groupon_payment_page( $use_groupon_code = 'N', $event_id
 					$groupon_details['discount'] = $event_cost;
 					$_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon'] = $groupon_details;
 					
-				}			
+					$msg .= 'has being successfully applied to the following events:<br/>';
+					
+				} else {
+				
+					$payment_status = 'Completed';
+					$today = date(get_option('date_format'));
+					
+                    if ( $attendee_id ) {
+						// update attendee			
+						$set_cols_and_values = array( 'coupon_code'=>$groupon_code, 'amount_pd'=>$event_cost, 'payment_status'=>$payment_status, 'payment_date' => $today );
+						$set_format = array( '%s', '%f', '%s', '%s' );
+						$where_cols_and_values = array( 'id'=> $attendee_id );
+						$where_format = array( '%d' );						
+						$wpdb->update( EVENTS_ATTENDEE_TABLE, $set_cols_and_values, $where_cols_and_values, $set_format, $where_format  );
+					}
+								
+					$groupon_status--;
+					
+					// update groupon
+					$SQL="UPDATE " . EVENTS_GROUPON_CODES_TABLE . " SET groupon_status = %d, date = %s WHERE id = %s";
+					$wpdb->query( $wpdb->prepare( $SQL, $groupon_status, $today, $groupon_id ));	
+					
+					echo $msg;
+									
+				} 
 				
 				$event_cost = 0.00;
 
 			} else {
 			
-				$msg = '<p id="event_espresso_invalid_coupon"><font color="red">'.__('Sorry, that voucher code is invalid or has already been used.','event_espresso'). '</font></p>';				
-				$valid = 0;
-				if ( ! $mer ) {
-					echo $msg;
+				$valid = FALSE;
+				if ( $mer ) {
+					$msg = '<p id="event_espresso_invalid_groupon" style="margin:0;"><font color="red">'.__('Sorry, voucher code ', 'event_espresso') . '<strong>' . $groupon_code . '</strong>' . __(' is invalid or has already been used.','event_espresso'). '</font></p>';				
 				}
+				
 			}
 			
 			return array( 'event_cost'=>$event_cost, 'valid'=>$valid, 'msg' => $msg );		
