@@ -57,6 +57,7 @@ function event_espresso_groupon_install(){
 $table_name = "events_groupon_codes";
 $table_version = "1.5.2";
 $sql = "id int(11) NOT NULL AUTO_INCREMENT,
+	event_id int(10) unsigned NOT NULL,
 	groupon_code varchar(50) DEFAULT '0',
 	groupon_status INT DEFAULT '1',
 	groupon_holder TEXT DEFAULT NULL,
