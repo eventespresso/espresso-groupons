@@ -55,7 +55,7 @@ require_once("groupons_admin_page.php");
 function event_espresso_groupon_install(){
 //Groupon database install
 $table_name = "events_groupon_codes";
-$table_version = "1.5.2";
+$table_version = "1.5.3";
 $sql = "id int(11) NOT NULL AUTO_INCREMENT,
 	event_id int(10) unsigned NOT NULL,
 	groupon_code varchar(50) DEFAULT '0',
