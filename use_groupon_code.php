@@ -16,7 +16,7 @@ function event_espresso_groupon_payment_page($use_groupon_code, $event_id, $even
 					$groupon_status = $groupon->groupon_status;
 					$groupon_holder = $groupon->groupon_holder;
 				}
-				_e('<p id="event_espresso_valid_groupon"><strong>You are using groupon code:</strong> '.$groupon_code.' purchased by '.$groupon_holder.'</p>','event_espresso');
+				_e('<p id="event_espresso_valid_groupon"><strong>You are using voucher code:</strong> '.$groupon_code.' purchased by '.$groupon_holder.'</p>','event_espresso');
 							
 				if($valid_groupon == true){
 					$event_cost = '0.00';
