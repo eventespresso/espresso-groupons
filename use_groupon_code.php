@@ -4,11 +4,7 @@ if ( ! function_exists( 'event_espresso_process_groupon' )) {
 	function event_espresso_process_groupon( $event_id, $event_cost, $mer ) {
 	
 		do_action('action_hook_espresso_log', __FILE__, __FUNCTION__, '');		
-		echo '<h4>$event_id : ' . $event_id . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
-		echo '<h4>$event_cost : ' . $event_cost . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
-		echo '<h4>$mer : ' . $mer . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
-		printr( $_POST, '$_POST  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span>', 'auto' );
-		printr( $_SESSION, '$_SESSION  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span>', 'auto' );
+
 		$use_groupon_code = isset( $_POST['use_groupon'][$event_id] ) ? $_POST['use_groupon'][$event_id] : 'N';				
 
 		if ( $mer ) {
@@ -20,14 +16,9 @@ if ( ! function_exists( 'event_espresso_process_groupon' )) {
 		} else {
 			$groupon_code = isset( $_POST['event_espresso_groupon_code'] ) ? wp_strip_all_tags( $_POST['event_espresso_groupon_code'] ) : '';
 		}
-	
-//		echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
- 
-//		if ( $groupon_code ) {		
-			return event_espresso_groupon_payment_page( $event_id, $event_cost, $mer, $use_groupon_code );
-//		} else {
-//			return FALSE;
-//		}
+
+		return event_espresso_groupon_payment_page( $event_id, $event_cost, $mer, $use_groupon_code );
+
 	}
 }
 
@@ -44,21 +35,21 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 		}
 
 		$event_cost = (float)$event_cost;
-		
+
 		$groupon_code = isset( $_POST['event_espresso_groupon_code'] ) ? wp_strip_all_tags( $_POST['event_espresso_groupon_code'] ) : FALSE;
-		if ( $groupon_code === FALSE ) {
-			$groupon_code = isset( $_SESSION['espresso_session']['event_espresso_groupon_code'] ) ? wp_strip_all_tags( $_SESSION['espresso_session']['event_espresso_groupon_code'] ) : FALSE;
+		//echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
+		if ( $groupon_code === FALSE && isset( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon'] ) ) {
+			$groupon_code = isset( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon']['code'] ) ? wp_strip_all_tags( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon']['code'] ) : FALSE;
 		}
-		
+		//echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
 		if ( ! $use_groupon_code ) {
 			$use_groupon_code = isset( $_POST['use_groupon'][$event_id] ) ? $_POST['use_groupon'][$event_id] : 'N';			
 		}
+//		echo '<h4>$event_id : ' . $event_id . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
 //		echo '<h4>$use_groupon_code : ' . $use_groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
-//		echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
 		
 		if ( $use_groupon_code == 'Y' && $event_cost > 0 ) {
 			if ( $groupon_code ){
-
 				$msg = '';
 				$error = '';
 				$event_id = absint( $event_id );
@@ -90,13 +81,13 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 					$SQL .= " AND ( event_id = 0 OR event_id = %d )";
 									
 					if ( $groupon = $wpdb->get_row( $wpdb->prepare( $SQL, $groupon_code, $event_id ))) {	
-					
 						$valid = TRUE;
 						$groupon_id = $groupon->id;
 						$groupon_code = $groupon->groupon_code;
 						$groupon_status = $groupon->groupon_status;
 						$groupon_holder = $groupon->groupon_holder;	
 					}
+					//printr( $groupon, '$groupon  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span>', 'auto' );
 					
 				}
 				
@@ -119,7 +110,16 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 						$msg .= '<strong>' . __('Voucher code ','event_espresso') . $groupon_code . '</strong>' . __(' purchased by ','event_espresso').$groupon_holder.'<br/>';
 	          		    $msg .= __('has being successfully applied to the following events', 'event_espresso') . ':<br/>';
 						
-					}								
+					} else {
+
+						$msg = '<div id="event_espresso_notifications" class="clearfix event-data-display" style="">';
+						$msg .= '<p id="event_espresso_valid_groupon" style="margin:0;">';
+						$msg .= '<strong>' . __('Voucher code ','event_espresso') . $groupon_code . '</strong>' . __(' purchased by ','event_espresso').$groupon_holder.'<br/>';
+	          		    $msg .= __('has being successfully applied to your registration', 'event_espresso');
+	          		    $msg .= '</p></div>';
+						echo $msg;
+						
+					}							
 
 	            } else {
 					
@@ -146,7 +146,7 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 
 
 
-function espresso_apply_goupon_to_attendee( $event_id, $final_price, $att_groupon ) {
+/*function espresso_apply_goupon_to_attendee( $event_id, $final_price, $att_groupon ) {
 	//printr( $att_groupon, '$att_groupon  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span>', 'auto' );
 	if ( isset( $att_groupon['code'] ) && $att_groupon['code'] != '' ) {	
 		if ( ! isset( $att_groupon['id'] )) {
@@ -177,7 +177,7 @@ function espresso_apply_goupon_to_attendee( $event_id, $final_price, $att_groupo
 		}				
 	}
 	return FALSE;
-}
+}*/
 
 
 
@@ -190,7 +190,7 @@ function event_espresso_groupon_registration_page($use_groupon_code, $event_id){
 	if ($use_groupon_code == "Y"){ ?>
 		<p class="event_form_field" id="groupon_code-<?php echo $event_id ?>">
 			<label for="groupon_code"><?php _e('Enter Voucher code:','event_espresso'); ?></label> 
-			<input tabIndex="9" maxLength="25" size="35" type="text" name="groupon[code]" id="groupon_code-<?php echo $event_id;?>">
+			<input tabIndex="9" maxLength="25" size="35" type="text" name="event_espresso_groupon_code" id="groupon_code-<?php echo $event_id;?>">
 			<input type="hidden" name="use_groupon[<?php echo $event_id; ?>]" value="Y" />
 		</p>
 <?php
