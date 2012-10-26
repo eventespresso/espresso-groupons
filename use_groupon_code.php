@@ -41,7 +41,7 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 		if ( $groupon_code === FALSE && isset( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon'] ) ) {
 			$groupon_code = isset( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon']['code'] ) ? wp_strip_all_tags( $_SESSION['espresso_session']['events_in_session'][ $event_id ]['groupon']['code'] ) : FALSE;
 		}
-		//echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
+//		echo '<h4>$groupon_code : ' . $groupon_code . '  <br /><span style="font-size:10px;font-weight:normal;">' . __FILE__ . '<br />line no: ' . __LINE__ . '</span></h4>';
 		if ( ! $use_groupon_code ) {
 			$use_groupon_code = isset( $_POST['use_groupon'][$event_id] ) ? $_POST['use_groupon'][$event_id] : 'N';			
 		}
@@ -81,7 +81,7 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 					$SQL .= " AND ( event_id = 0 OR event_id = %d )";
 									
 					if ( $groupon = $wpdb->get_row( $wpdb->prepare( $SQL, $groupon_code, $event_id ))) {	
-						$valid = TRUE;
+						$valid = $groupon->groupon_status;;
 						$groupon_id = $groupon->id;
 						$groupon_code = $groupon->groupon_code;
 						$groupon_status = $groupon->groupon_status;
@@ -125,7 +125,17 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 					
 					$valid = FALSE;
 					if ( $mer ) {
-						$error =  '<p id="event_espresso_invalid_groupon" style="margin:0;"><font color="red">'.__('Sorry, voucher code ', 'event_espresso') . '<strong>' . $groupon_code . '</strong>' . __(' is either invalid, expired, has already been used, or can not be used for the event(s) you are applying it to.','event_espresso'). '</font></p>';
+					
+						$error =  '<p id="event_espresso_invalid_groupon" style="margin:0;color:red;">'.__('Sorry, voucher code ', 'event_espresso') . '<strong>' . $groupon_code . '</strong>' . __(' is either invalid, expired, has already been used, or can not be used for the event(s) you are applying it to.','event_espresso'). '</p>';
+				
+					} else {
+					
+						$msg = '<div id="event_espresso_notifications" class="clearfix event-data-display" style="">';
+						$msg .= '<p id="event_espresso_invalid_groupon" style="margin:0;color:red;">';
+						$msg .= __('Sorry, voucher code ', 'event_espresso') . '<strong>' . $groupon_code . '</strong>' . __(' is either invalid, expired, has already been used, or can not be used for the event(s) you are applying it to.','event_espresso');
+	          		    $msg .= '</p></div>';
+						echo $msg;
+						
 					}
 					
 	            }
