@@ -112,12 +112,10 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 						
 					} else {
 
-						$msg = '<div id="event_espresso_notifications" class="clearfix event-data-display" style="">';
-						$msg .= '<p id="event_espresso_valid_groupon" style="margin:0;">';
+						$msg = '<p id="event_espresso_valid_groupon" style="margin:0;">';
 						$msg .= '<strong>' . __('Voucher code ','event_espresso') . $groupon_code . '</strong>' . __(' purchased by ','event_espresso').$groupon_holder.'<br/>';
 	          		    $msg .= __('has being successfully applied to your registration', 'event_espresso');
-	          		    $msg .= '</p></div>';
-						echo $msg;
+	          		    $msg .= '</p>';
 						
 					}							
 
@@ -130,11 +128,9 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 				
 					} else {
 					
-						$msg = '<div id="event_espresso_notifications" class="clearfix event-data-display" style="">';
-						$msg .= '<p id="event_espresso_invalid_groupon" style="margin:0;color:red;">';
+						$msg = '<p id="event_espresso_invalid_groupon" style="margin:0;color:red;">';
 						$msg .= __('Sorry, voucher code ', 'event_espresso') . '<strong>' . $groupon_code . '</strong>' . __(' is either invalid, expired, has already been used, or can not be used for the event(s) you are applying it to.','event_espresso');
-	          		    $msg .= '</p></div>';
-						echo $msg;
+	          		    $msg .= '</p>';
 						
 					}
 					
@@ -153,7 +149,25 @@ if ( ! function_exists( 'event_espresso_groupon_payment_page' )) {
 
 
 
+function espresso_update_groupon( $primary_attendee_id = FALSE, $groupon_code = FALSE ) {
 
+	if ( ! $primary_attendee_id || ! $groupon_code ) {
+		return FALSE;
+	}
+	
+	global $wpdb;
+	// double check that groupon code does exist and is still valid
+	$SQL = "SELECT id FROM " . EVENTS_GROUPON_CODES_TABLE ;
+	$SQL .= " WHERE  groupon_code = %s";								
+	$SQL .= " AND  groupon_status = 1";								
+	if ( $groupon = $wpdb->get_row( $wpdb->prepare( $SQL, $groupon_code ))) {
+		$set_cols_and_values = array( 'groupon_status'=> FALSE, 'attendee_id'=> $primary_attendee_id, 'date'=> date(get_option('date_format')));
+		$set_format = array( '%d', '%d', '%s' );
+		$where_cols_and_values = array( 'id'=> $groupon->id );  	
+		$where_format = array( '%d' );		
+		$wpdb->update( EVENTS_GROUPON_CODES_TABLE, $set_cols_and_values, $where_cols_and_values, $set_format, $where_format  );
+	}
+}
 
 
 /*function espresso_apply_goupon_to_attendee( $event_id, $final_price, $att_groupon ) {
