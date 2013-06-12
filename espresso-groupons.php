@@ -77,4 +77,4 @@ register_deactivation_hook(__FILE__,'event_espresso_groupon_deactivate');
 
 //$event_espresso_groupon_dir = EVENT_ESPRESSO_UPLOAD_DIR."groupons/";
 //define("EVENT_ESPRESSO_GROUPON_DIR", $event_espresso_groupon_dir);
-define("EVENTS_GROUPON_CODES_TABLE", get_option('events_groupon_codes_tbl')); //Define Groupon db table shortname
+define("EVENTS_GROUPON_CODES_TABLE",$wpdb->prefix."events_groupon_codes"); //Define Groupon db table shortname
