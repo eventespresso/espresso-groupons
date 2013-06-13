@@ -53,21 +53,24 @@ require_once("event_management_functions.php");
 require_once("use_groupon_code.php");
 require_once("groupons_admin_page.php");
 function event_espresso_groupon_install(){
-//Groupon database install
-$table_name = "events_groupon_codes";
-$table_version = "1.5.3";
-$sql = "id int(11) NOT NULL AUTO_INCREMENT,
-	event_id int(10) unsigned NOT NULL,
-	groupon_code varchar(50) DEFAULT '0',
-	groupon_status INT DEFAULT '1',
-	groupon_holder TEXT DEFAULT NULL,
-	attendee_id int(11) DEFAULT '0',
-	date varchar(50) DEFAULT '0000-00-00',
-	PRIMARY KEY (id)";
-event_espresso_run_install ($table_name, $table_version, $sql);
-//Groupon database install end
-add_option('events_groupons_active', 'true', '', 'yes');
-update_option('events_groupons_active', 'true');
+	//Groupon database install
+	$table_name = "events_groupon_codes";
+	$table_version = "1.5.3";
+	$sql = "id int(11) NOT NULL AUTO_INCREMENT,
+		event_id int(10) unsigned NOT NULL,
+		groupon_code varchar(50) DEFAULT '0',
+		groupon_status INT DEFAULT '1',
+		groupon_holder TEXT DEFAULT NULL,
+		attendee_id int(11) DEFAULT '0',
+		date varchar(50) DEFAULT '0000-00-00',
+		PRIMARY KEY  (id)";
+	if ( ! function_exists( 'event_espresso_run_install' )) {
+		require_once( EVENT_ESPRESSO_PLUGINFULLPATH . 'includes/functions/database_install.php' ); 		
+	}
+	event_espresso_run_install ($table_name, $table_version, $sql);
+	//Groupon database install end
+	add_option('events_groupons_active', 'true', '', 'yes');
+	update_option('events_groupons_active', 'true');
 }
 function event_espresso_groupon_deactivate(){
 	update_option( 'events_groupons_active', 'false');
@@ -79,3 +82,16 @@ register_deactivation_hook(__FILE__,'event_espresso_groupon_deactivate');
 //define("EVENT_ESPRESSO_GROUPON_DIR", $event_espresso_groupon_dir);
 global $wpdb;
 define("EVENTS_GROUPON_CODES_TABLE",$wpdb->prefix."events_groupon_codes"); //Define Groupon db table shortname
+
+/**
+ *         captures plugin activation errors for debugging
+ *
+ *         @access public
+ *         @return void
+ */
+function espresso_groupon_plugin_activation_errors() {
+    if ( WP_DEBUG === TRUE ) {
+        file_put_contents( WP_CONTENT_DIR. '/uploads/espresso/logs/espresso_groupon_plugin_activation_errors.html', ob_get_contents() );
+    }    
+}
+add_action('activated_plugin', 'espresso_groupon_plugin_activation_errors'); 
