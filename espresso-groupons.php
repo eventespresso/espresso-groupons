@@ -4,7 +4,7 @@ Plugin Name: Event Espresso - Social Coupons
 Plugin URI: http://eventespresso.com/
 Description: Groupon integration addon for Event Espresso. <a href="admin.php?page=support">Support</a>
 
-Version: 1.5.3
+Version: 1.5.3.1
 
 Author: Seth Shoultes
 Author URI: http://www.eventespresso.com
