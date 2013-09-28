@@ -38,7 +38,7 @@ function ee_groupon_load_pue_update() {
 		$api_key = $org_options['site_license_key'];
 		$host_server_url = 'http://eventespresso.com';
 		$plugin_slug = array(
-			'premium' => array('p', 'espresso-groupon'),
+			'premium' => array('p' => 'espresso-groupon'),
 			'prerelease' => array('b' => 'espressso-groupon-pr')
 			);
 		$options = array(
