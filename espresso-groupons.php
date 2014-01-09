@@ -4,7 +4,7 @@ Plugin Name: Event Espresso - Social Coupons
 Plugin URI: http://eventespresso.com/
 Description: Groupon integration addon for Event Espresso. <a href="admin.php?page=support">Support</a>
 
-Version: 1.5.3.1
+Version: 1.5.4.b
 
 Author: Seth Shoultes
 Author URI: http://www.eventespresso.com
@@ -37,13 +37,18 @@ function ee_groupon_load_pue_update() {
 		require(EVENT_ESPRESSO_PLUGINFULLPATH . 'class/pue/pue-client.php' );
 		$api_key = $org_options['site_license_key'];
 		$host_server_url = 'http://eventespresso.com';
-		$plugin_slug = 'espresso-groupon';
+		$plugin_slug = array(
+			'premium' => array('p' => 'espresso-groupon'),
+			'prerelease' => array('b' => 'espressso-groupon-pr')
+			);
 		$options = array(
 			'apikey' => $api_key,
 			'lang_domain' => 'event_espresso',
 			'checkPeriod' => '24',
 			'option_key' => 'site_license_key',
-			'options_page_slug' => 'event_espresso'
+			'options_page_slug' => 'event_espresso',
+			'plugin_basename' => plugin_basename(__FILE__),
+			'use_wp_update' => FALSE, //if TRUE then you want FREE versions of the plugin to be updated from WP
 		);
 		$check_for_updates = new PluginUpdateEngineChecker($host_server_url, $plugin_slug, $options); //initiate the class and start the plugin update engine!
 	}
@@ -55,7 +60,7 @@ require_once("groupons_admin_page.php");
 function event_espresso_groupon_install(){
 	//Groupon database install
 	$table_name = "events_groupon_codes";
-	$table_version = "1.5.3";
+	$table_version = "1.5.4.b";
 	$sql = "id int(11) NOT NULL AUTO_INCREMENT,
 		event_id int(10) unsigned NOT NULL,
 		groupon_code varchar(50) DEFAULT '0',
